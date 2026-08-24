@@ -19,5 +19,5 @@ def validate_space_url(url: str) -> Tuple[bool, Optional[str], Optional[str]]:
     if not match:
         return False, None, "Invalid URL format. Expected: https://x.com/i/spaces/{SPACE_ID}"
 
-    space_id = match.group(2)  # Changed from group(1) to group(2)
+    space_id = match.group(2)
     return True, space_id, None

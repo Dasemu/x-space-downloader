@@ -203,8 +203,8 @@ def build_ffmpeg_command(audio_path: str, output_path: str, width: int, height: 
         "veryfast",
         "-pix_fmt",
         "yuv420p",
-            "-c:a",
-            "copy",
+        "-c:a",
+        "copy",
         "-shortest",
         output_path,
     ]
@@ -454,11 +454,3 @@ def ellipsize(draw: ImageDraw.ImageDraw, value: str, font, max_width: int) -> st
     while trimmed and draw.textlength(trimmed + suffix, font=font) > max_width:
         trimmed = trimmed[:-1]
     return (trimmed or value[:1]) + suffix
-
-
-def format_time(seconds: float) -> str:
-    minutes, secs = divmod(int(seconds), 60)
-    hours, minutes = divmod(minutes, 60)
-    if hours:
-        return f"{hours:d}:{minutes:02d}:{secs:02d}"
-    return f"{minutes:d}:{secs:02d}"

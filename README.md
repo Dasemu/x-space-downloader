@@ -1,5 +1,8 @@
 # X Space Downloader
 
+[![Tests](https://github.com/Dasemu/x-space-downloader/actions/workflows/tests.yml/badge.svg)](https://github.com/Dasemu/x-space-downloader/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A Python CLI tool that downloads X (Twitter) Space recordings and renders an MP4 replay with audio and a compact participant view.
 
 ## Features
@@ -35,7 +38,7 @@ sudo apt install ffmpeg
 ### Install the tool
 
 ```bash
-git clone https://github.com/synapz-org/x-space-downloader.git
+git clone https://github.com/Dasemu/x-space-downloader.git
 cd x-space-downloader
 pip install -e .
 ```
@@ -67,6 +70,18 @@ x-space-dl --cookies cookies.txt https://x.com/i/spaces/1ZkKzZWnVRRKv
 ```
 
 Cookies are also used to fetch the Space title, host, speakers, avatars, and replay chat timeline from X/Periscope metadata.
+
+### Environment variables
+
+Fetching metadata (required for the default video mode) needs a bearer token for X's web GraphQL API:
+
+```bash
+export X_BEARER_TOKEN="<token>"
+```
+
+Get this value from your own browser: open x.com while logged in, open DevTools → Network, and copy the `authorization: Bearer ...` header from any request to `x.com/i/api/graphql`. This is the public token issued to X's web client, not a personal secret, but it's not bundled with this tool — you provide your own.
+
+`X_AUDIO_SPACE_QUERY_ID` can optionally override the GraphQL query ID used for `AudioSpaceById` if X changes it.
 
 ### Speaker timeline
 

@@ -116,13 +116,6 @@ def download_space_video(
         raise DownloadError(f"Failed to render Space video: {exc}") from exc
 
 
-def fetch_metadata_or_fallback(space_id: str, cookies_file: Optional[str]) -> SpaceMetadata:
-    try:
-        return XApiClient(cookies_file=cookies_file).fetch_space_metadata(space_id)
-    except XApiError:
-        return SpaceMetadata(space_id=space_id, title=f"X Space {space_id}", participants=[])
-
-
 def fetch_required_metadata(space_id: str, cookies_file: Optional[str]) -> SpaceMetadata:
     try:
         return XApiClient(cookies_file=cookies_file).fetch_space_metadata(space_id)
@@ -141,17 +134,6 @@ def fetch_required_timeline(metadata: SpaceMetadata, cookies_file: Optional[str]
     merge_history_participants(metadata, history_participants)
     if not intervals and not first_seen:
         raise DownloadError("Space replay timeline did not include participant or microphone events.")
-    return SpeakerTimeline(intervals, first_seen)
-
-
-def fetch_timeline_or_none(metadata: SpaceMetadata, cookies_file: str) -> Optional[SpeakerTimeline]:
-    try:
-        intervals, first_seen, history_participants = XApiClient(cookies_file=cookies_file).fetch_space_timeline(metadata)
-    except XApiError:
-        return None
-    merge_history_participants(metadata, history_participants)
-    if not intervals and not first_seen:
-        return None
     return SpeakerTimeline(intervals, first_seen)
 
 
