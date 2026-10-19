@@ -1,0 +1,66 @@
+name: Version bump
+
+on:
+  push:
+    branches: [development, main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Determine bump type
+        id: bump
+        run: |
+          if [ "${{ github.ref_name }}" = "development" ]; then
+            echo "type=patch" >> "$GITHUB_OUTPUT"
+          else
+            # On main: minor bump if this push merged development, otherwise a hotfix patch bump.
+            if git merge-base --is-ancestor origin/development HEAD 2>/dev/null; then
+              echo "type=minor" >> "$GITHUB_OUTPUT"
+            else
+              echo "type=patch" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Bump version in pyproject.toml
+        id: version
+        run: |
+          current=$(grep -m1 '^version = ' pyproject.toml | sed -E 's/version = "(.*)"/\1/')
+          IFS='.' read -r major minor patch <<< "$current"
+          if [ "${{ steps.bump.outputs.type }}" = "minor" ]; then
+            minor=$((minor + 1))
+            patch=0
+          else
+            patch=$((patch + 1))
+          fi
+          new="$major.$minor.$patch"
+          sed -i -E "0,/^version = \".*\"/s//version = \"$new\"/" pyproject.toml
+          echo "new=$new" >> "$GITHUB_OUTPUT"
+
+      - name: Commit version bump
+        run: |
+          git add pyproject.toml
+          git commit -m "chore(release): v${{ steps.version.outputs.new }} [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Merge main back into development
+        if: github.ref_name == 'main'
+        run: |
+          git fetch origin development
+          git checkout development
+          git merge --no-edit origin/main
+          git push origin development
